@@ -24,10 +24,10 @@ userRoutes.post('/login', async (req, res) => {
   if (!user) {
     return res.status(401).json({ message: 'Invalid credentials' });
   }
-  // // Generate JWT token
-  // if (!secret) {
-  //   throw new Error("JWT secret is not defined");
-  // }
+  // Generate JWT token
+  if (!secret) {
+    throw new Error("JWT secret is not defined");
+  }
   const token = jwt.sign({ userId: user.id }, secret, { expiresIn: '2w' });
   res.json({ token, userId: user.id, accountType: user.accountType });
 });
