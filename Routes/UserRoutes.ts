@@ -8,12 +8,13 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';  
 import { verifyToken } from "../verify";
 import { addCategories } from "../Populator/Receipt/CategoryPopulator";
+import { validateReceipt } from "../validateReceipt";
 
 const userRoutes = Router();
 const userService = new UserService();
 
 //Initialize Secret:
-const secret = process.env.JWT_SECRET
+const secret = '5cab09d219339bb519cb4fe771fb65e0a39acd61b59df25ddf767301f17dd104'
 
 //USERS:  
 
@@ -134,6 +135,25 @@ userRoutes.post('/login', async (req, res) => {
       res.status(500).json({ message: 'Internal server error' });
   }
   });
+
+  userRoutes.post('/validate-receipt', async (req, res) => {
+    const receiptData = req.body.receiptData;
+
+    try {
+        const result = await validateReceipt(receiptData);
+
+        if (result.success) {
+            res.json({
+                success: true,
+                expiry_date: result.expiryDate
+            });
+        } else {
+            res.json({ success: false });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false });
+    }
+});
 
   export default userRoutes;
 
