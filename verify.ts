@@ -12,6 +12,9 @@ export const verifyToken = (
   res: Response,
   next: NextFunction
 ) => {
+
+  //Initialize Secret:
+  const secret = '5cab09d219339bb519cb4fe771fb65e0a39acd61b59df25ddf767301f17dd104'
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -21,11 +24,8 @@ export const verifyToken = (
   const token = authHeader;
 
   try {
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT secret is not defined");
-    }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as any as User;
-    const decodedUserId = jwt.verify(token, process.env.JWT_SECRET) as any;
+    const decoded = jwt.verify(token, secret) as any as User;
+    const decodedUserId = jwt.verify(token, secret) as any;
     req.user = decoded;
     setCurrentUserId(decodedUserId.userId);
     next();
