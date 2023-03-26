@@ -14,8 +14,18 @@ export class UserService {
       console.log('Invalid account type provided.');
       return;
     }
-
-    await this.userCollection.doc(userId).update({ accountType: accountType });
+  
+    // Query for the user with the matching userId property
+    const querySnapshot = await this.userCollection.where('id', '==', userId).get();
+  
+    if (querySnapshot.empty) {
+      console.log(`No user found with userId ${userId}.`);
+      return;
+    }
+  
+    // Assuming there's only one document with the matching userId
+    const userDoc = querySnapshot.docs[0];
+    await userDoc.ref.update({ accountType: accountType });
     console.log(`User with id ${userId} updated account type to ${accountType} successfully.`);
   }
 
@@ -75,7 +85,14 @@ export class UserService {
   }
 
   async deleteUser(userId: string): Promise<void> {
-    await this.userCollection.doc(userId).delete();
-    console.log(`User with id ${userId} deleted successfully.`);
-  }
+    const querySnapshot = await this.userCollection.where("id", "==", userId).get();
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      await doc.ref.delete();
+      console.log(`User with id ${userId} deleted successfully.`);
+    } else {
+      console.log(`User with id ${userId} not found.`);
+    }
+}
+
 }

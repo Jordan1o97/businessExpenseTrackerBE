@@ -28,6 +28,8 @@ async function validateReceipt(receiptData: string): Promise<ReceiptValidationRe
     }
   });
 
+  console.log(response.data.status);
+
   if (response.data.status === 0) {
     const receipt = response.data.receipt;
 
@@ -35,7 +37,7 @@ async function validateReceipt(receiptData: string): Promise<ReceiptValidationRe
     // This example assumes only one in-app purchase
     const expiryDateMs = receipt.in_app[0].expires_date_ms;
     const expiryDate = new Date(Number(expiryDateMs)).toISOString();
-
+    console.log("Success")
     return { success: true, expiryDate: expiryDate };
   } else {
     return { success: false };

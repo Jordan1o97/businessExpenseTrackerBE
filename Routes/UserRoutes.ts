@@ -136,8 +136,9 @@ userRoutes.post('/login', async (req, res) => {
   }
   });
 
-  userRoutes.post('/validate-receipt', async (req, res) => {
+  userRoutes.post('/validateReceipt', async (req, res) => {
     const receiptData = req.body.receiptData;
+    console.log(req.body);
 
     try {
         const result = await validateReceipt(receiptData);
