@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { TripLog } from '../../DTO/Milage Log/TripLog';
 import { TripLogService } from '../../Services/Milage Log/TripLogService';
-import { addTripLogs } from '../../Populator/Milage Log/TripLogPopulator';
 import { getCurrentUserId } from '../../globals';
 import { VehicleService } from '../../Services/Milage Log/VehicleService';
 import { ClientService } from '../../Services/ClientService';
@@ -44,6 +43,7 @@ tripLogRoutes.post('/triplogs', verifyToken, async (req, res) => {
       expense,
       start,
       end,
+      totalHours,
       rate,
       vehicle,
       destination,
@@ -56,6 +56,7 @@ tripLogRoutes.post('/triplogs', verifyToken, async (req, res) => {
       expense,
       start,
       end,
+      totalHours,
       rate,
       vehicle,
       destination,
@@ -84,6 +85,7 @@ tripLogRoutes.put('/triplogs/:id', verifyToken, async (req, res) => {
         expense,
         start,
         end,
+        totalHours,
         rate,
         vehicle,
         destination,
@@ -95,6 +97,7 @@ tripLogRoutes.put('/triplogs/:id', verifyToken, async (req, res) => {
       existingTripLog.expense = expense;
       existingTripLog.start = start;
       existingTripLog.end = end;
+      existingTripLog.totalHours;
       existingTripLog.rate = rate;
       existingTripLog.vehicle = vehicle;
       existingTripLog.destination = destination;
@@ -122,16 +125,16 @@ tripLogRoutes.delete("/triplog/:id", verifyToken, async (req, res) => {
   }
 });
 
-// Populate trip logs
-tripLogRoutes.post("/triplog/populate", verifyToken, async (req, res) => {
-  try {
-    await addTripLogs();
-    res.json({ message: "Trip logs populated successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
+// // Populate trip logs
+// tripLogRoutes.post("/triplog/populate", verifyToken, async (req, res) => {
+//   try {
+//     await addTripLogs();
+//     res.json({ message: "Trip logs populated successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
 
   // Return TripLog Daily:
   tripLogRoutes.get("/triplog/user/:userId/daily", verifyToken, async (req, res) => {
@@ -263,18 +266,19 @@ tripLogRoutes.get("/triplog/user/:userId/monthly", verifyToken, async (req, res)
   tripLogRoutes.get("/triplog/user/:userId/vehicles", verifyToken, async (req, res) => {
     try {
       const { userId } = req.params;
-  
+
       // Get all trip logs for the current user
       const tripLogs = await tripLogService.getTripLogsByUserId(userId);
-  
+
       // Create object to hold trip logs sorted by vehicle name
       const tripLogsByVehicle: Record<string, any[]> = {};
-  
+
       // Loop through each trip log
       for (const tripLog of tripLogs) {
         // Get the vehicle for the current trip log
         const vehicle = await vehicleService.getVehicleById(tripLog.vehicle);
-  
+        console.log(tripLog.vehicle)
+
         // If the vehicle exists, add the trip log to the appropriate vehicle in the tripLogsByVehicle object
         if (vehicle) {
           const vehicleName = vehicle.name;
@@ -284,18 +288,17 @@ tripLogRoutes.get("/triplog/user/:userId/monthly", verifyToken, async (req, res)
           tripLogsByVehicle[vehicleName].push(tripLog);
         }
       }
-  
+
+      // Convert the tripLogsByVehicle object to an array of tuples
+      const tripLogsByVehicleArray = Object.entries(tripLogsByVehicle);
+
       // Sort the trip logs by date for each vehicle
-      for (const vehicleName in tripLogsByVehicle) {
-        tripLogsByVehicle[vehicleName].sort(
-          (a, b) =>
-            new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
+      for (const [vehicleName, logs] of tripLogsByVehicleArray) {
+        logs.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       }
-  
+
       // Send the result as JSON response
-      res.json(tripLogsByVehicle);
-      console.log(tripLogsByVehicle);
+      res.json(tripLogsByVehicleArray);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Internal server error" });

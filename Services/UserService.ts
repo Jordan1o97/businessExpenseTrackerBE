@@ -8,7 +8,7 @@ export class UserService {
   constructor() {
     this.userCollection = db.collection("users");
   }
-
+  
   async updateUserAccountType(userId: string, accountType: string): Promise<void> {
     if (accountType !== 'free' && accountType !== 'paid') {
       console.log('Invalid account type provided.');

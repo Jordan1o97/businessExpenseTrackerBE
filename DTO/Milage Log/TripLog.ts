@@ -5,9 +5,10 @@ export class TripLog {
   id: string;
   date: Date;
   expense: number;
-  start: number;
-  end: number;
+  start: Date;
+  end: Date;
   rate: number;
+  totalHours: number;
   total: number;
   vehicle: string;
   destination: string;
@@ -19,8 +20,9 @@ export class TripLog {
   constructor(
     date: Date,
     expense: number,
-    start: number,
-    end: number,
+    start: Date,
+    end: Date,
+    totalHours: number,
     rate: number,
     vehicle: string,
     destination: string,
@@ -34,7 +36,8 @@ export class TripLog {
     this.start = start;
     this.end = end;
     this.rate = rate;
-    this.total = rate * (end - start);
+    this.totalHours = totalHours;
+    this.total = rate * totalHours;;
     this.vehicle = vehicle;
     this.destination = destination;
     this.origin = origin;
