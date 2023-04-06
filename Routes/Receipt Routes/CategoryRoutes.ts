@@ -39,7 +39,7 @@ const categoryService = new CategoryService();
     try {
       const { name, icon } = req.body;
       const category = new Category(name, icon);
-      await categoryService.addCategory(category);
+      await categoryService.addCategory(category, getCurrentUserId());
       res.json({ message: "Category added successfully" });
     } catch (error) {
       console.error(error);
@@ -76,7 +76,7 @@ const categoryService = new CategoryService();
   // Populate categories
   categoryRoutes.post("/categories/populate", verifyToken, async (req, res) => {
     try {
-      await addCategories();
+      await addCategories(getCurrentUserId());
       res.json({ message: "Categories populated successfully" });
     } catch (error) {
       console.error(error);
