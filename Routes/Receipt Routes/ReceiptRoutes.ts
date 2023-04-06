@@ -4,7 +4,7 @@ import { ReceiptService } from '../../Services/Receipt/ReceiptService';
 import { CategoryService } from '../../Services/Receipt/CategoryService';
 import { ClientService } from '../../Services/ClientService';
 import PDFDocument from 'pdfkit';
-
+const generateReceiptPDF = require('../../receiptPdfGenerator');
 import fs from 'fs';
 import moment from 'moment';
 import { addReceipts } from '../../Populator/Receipt/ReceiptPopulator';
@@ -294,90 +294,10 @@ receiptRoutes.get("/receipts/user/:userId/category", verifyToken, async (req, re
   }
 });
 
-  receiptRoutes.get("/receipts/user/:userId/category/pdf", verifyToken, async (req, res) => {
-    try {
-        const { userId } = req.params;
-
-        // Get all receipts for the current user
-        const receipts = await receiptService.getReceiptsByUserId(userId);
-
-        // Create object to hold receipts sorted by category
-        const receiptsByCategory: Record<string, { receipts: Receipt[] }> = {};
-
-        // Loop through each receipt
-        for (const receipt of receipts) {
-            // Get the category for the current receipt
-            const category = await categoryService.getCategoryById(receipt.category);
-
-            // If the category exists, add the receipt to the appropriate category in the receiptsByCategory object
-            if (category) {
-                const categoryName = category.name;
-                if (!receiptsByCategory[categoryName]) {
-                    receiptsByCategory[categoryName] = { receipts: [] };
-                }
-                receiptsByCategory[categoryName].receipts.push(receipt);
-            }
-        }
-
-        // Sort the receipts by category name
-        const sortedReceiptsByCategory: Record<string, { receipts: Receipt[] }> = {};
-        Object.keys(receiptsByCategory)
-            .sort()
-            .forEach(function (key) {
-                sortedReceiptsByCategory[key] = receiptsByCategory[key];
-            });
-
-        // Generate PDF with categories separating the PDF lists
-        const pdfDoc = new PDFDocument({ autoFirstPage: false });
-        pdfDoc.pipe(res);
-
-        for (const categoryName in sortedReceiptsByCategory) {
-          pdfDoc.addPage();
-          pdfDoc.font("Helvetica-Bold").fontSize(14).text(categoryName, {
-              align: "center",
-          });
-          pdfDoc.moveDown();
-          const receipts = sortedReceiptsByCategory[categoryName].receipts;
-          if (receipts.length === 0) {
-              pdfDoc.font("Helvetica").fontSize(12).text("No receipts found.");
-          } else {
-              const header = ["Client", "Total", "Date"];
-              const widths = [250, 100, 150];
-              pdfDoc.font("Helvetica-Bold").fontSize(14);
-              header.forEach((title, index) => {
-                  pdfDoc.text(title, index * 200 + 50, pdfDoc.y, {
-                      width: widths[index],
-                      align: "left",
-                  });
-              });
-              pdfDoc.moveDown();
-              pdfDoc.font("Helvetica").fontSize(12);
-              for (const receipt of receipts) {
-                  const { clientId, finalTotal, date } = receipt;
-                  const formattedDate = moment(date).format("MMMM DD, YYYY h:mm:ss A");
-                  const client = await clientService.getClientById(clientId);
-                  const clientName = client ? client.name : "Unknown";
-                  const row = [clientName, `$${finalTotal.toFixed(2)}`, formattedDate];
-                  row.forEach((cell, index) => {
-                      pdfDoc.text(cell, index * 200 + 50, pdfDoc.y, {
-                          width: widths[index],
-                          align: "left",
-                      });
-                  });
-                  pdfDoc.moveDown();
-              }
-          }
-      }
-
-        // Wait for the PDFDocument to emit the 'end' event before closing the response stream
-        pdfDoc.on("end", () => {
-            res.end();
-        });
-        pdfDoc.end();
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
-    }
+receiptRoutes.get("/receipts/user/:userId/category/pdf", verifyToken, async (req, res) => {
+    const { userId } = req.params;
+    generateReceiptPDF(userId, res)
+    
 });
 
 //Client
@@ -421,57 +341,13 @@ receiptRoutes.get("/receipts/user/:userId/client", verifyToken, async (req, res)
   }
 });
 
-  //PDF Generator:
-
-  receiptRoutes.get('/receipts/user/:userId/pdf', verifyToken, async (req, res) => {
-    const userId = req.params.userId;
-    try {
-        const receipts = await receiptService.getReceiptsByUserId(userId);
-
-        if (receipts.length === 0) {
-            res.status(404).json({ message: 'No receipts found' });
-            return;
-        }
-
-        const pdfDoc = new PDFDocument();
-        pdfDoc.pipe(res);
-
-        // Set up the table header row
-        const header = ['Client', 'Total', 'Date'];
-        const widths = [250, 100, 150];
-        pdfDoc.font('Helvetica-Bold').fontSize(14);
-        header.forEach((title, index) => {
-            pdfDoc.text(title, index * 200 + 50, 50, { width: widths[index], align: 'left' });
-        });
-
-        // Set up the table rows
-        pdfDoc.font('Helvetica').fontSize(12);
-        let y = 70;
-
-        for (const receipt of receipts) {
-            const { clientId, finalTotal, date } = receipt;
-            const formattedDate = moment(date).format('MMMM DD, YYYY h:mm:ss A');
-
-            // Retrieve client name using the clientId
-            const client = await clientService.getClientById(clientId);
-            const clientName = client ? client.name : 'Unknown';
-
-            const row = [clientName, `$${finalTotal.toFixed(2)}`, formattedDate];
-            row.forEach((cell, index) => {
-                pdfDoc.text(cell, index * 200 + 50, y, { width: widths[index], align: 'left' });
-            });
-            y += 20;
-        }
-
-        pdfDoc.end();
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
+//   //PDF Generator:
+//   receiptRoutes.get('/receipts/user/:userId/pdf', verifyToken, async (req, res) => {
+//     const userId = req.params.userId;
+//     await generateReceiptPDF(userId, res);
+// });
 
 //Get Receipt Total
-
 receiptRoutes.get("/receipts/user/:userId/total", verifyToken, async (req, res) => {
   try {
     const { userId } = req.params;
