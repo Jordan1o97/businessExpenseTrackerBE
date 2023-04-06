@@ -34,5 +34,5 @@ app.use(
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Business Expense Tracker started on port ${port}`);
+  console.log(`Icubemedia's Business Expense Tracker started on port ${port}`);
 });
