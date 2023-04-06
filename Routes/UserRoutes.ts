@@ -72,7 +72,7 @@ userRoutes.post('/login', async (req, res) => {
   
       const user = new User(uuidv4(), accountType, username, password, name, companyName);
       await userService.addUser(user, password);
-      await addCategories();
+      await addCategories(user.id);
       res.json(user);
     } catch (error) {
       console.error(error);

@@ -1,7 +1,7 @@
 import { Category } from "../../DTO/Receipt/Category";
 import { CategoryService } from "../../Services/Receipt/CategoryService";
 
-export async function addCategories(): Promise<void> {
+export async function addCategories(userId: String): Promise<void> {
     const defaultCategories: Category[] = [
         new Category( "Accommodation", "https://firebasestorage.googleapis.com/v0/b/icubemedia-expensetracker.appspot.com/o/category_images%2FArtboard%2021.png?alt=media&token=4bf56f53-fde7-483c-ab16-def88eacb188"),
         new Category( "Advertising", "https://firebasestorage.googleapis.com/v0/b/icubemedia-expensetracker.appspot.com/o/category_images%2FArtboard%2011.png?alt=media&token=2066eb10-09bc-49aa-b6be-152630adabbc"),
@@ -26,6 +26,6 @@ export async function addCategories(): Promise<void> {
   const categoryService = new CategoryService();
 
   for(var category of defaultCategories){
-    await categoryService.addCategory(category);
+    await categoryService.addCategory(category, userId);
   }
 }

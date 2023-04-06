@@ -5,7 +5,7 @@ import { getCurrentUserId } from "../../globals";
 export class CategoryService {
   private categoryCollection = db.collection("categories");
 
-  async addCategory(category: Category): Promise<void> {
+  async addCategory(category: Category, userId: String): Promise<void> {
     const docRef = await this.categoryCollection.add({
       ...category,
       userId: getCurrentUserId(),
