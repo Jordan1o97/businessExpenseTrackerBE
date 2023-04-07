@@ -266,19 +266,18 @@ tripLogRoutes.get("/triplog/user/:userId/monthly", verifyToken, async (req, res)
   tripLogRoutes.get("/triplog/user/:userId/vehicles", verifyToken, async (req, res) => {
     try {
       const { userId } = req.params;
-
+  
       // Get all trip logs for the current user
       const tripLogs = await tripLogService.getTripLogsByUserId(userId);
-
+  
       // Create object to hold trip logs sorted by vehicle name
       const tripLogsByVehicle: Record<string, any[]> = {};
-
+  
       // Loop through each trip log
       for (const tripLog of tripLogs) {
         // Get the vehicle for the current trip log
         const vehicle = await vehicleService.getVehicleById(tripLog.vehicle);
-        console.log(tripLog.vehicle)
-
+  
         // If the vehicle exists, add the trip log to the appropriate vehicle in the tripLogsByVehicle object
         if (vehicle) {
           const vehicleName = vehicle.name;
@@ -288,17 +287,19 @@ tripLogRoutes.get("/triplog/user/:userId/monthly", verifyToken, async (req, res)
           tripLogsByVehicle[vehicleName].push(tripLog);
         }
       }
-
-      // Convert the tripLogsByVehicle object to an array of tuples
-      const tripLogsByVehicleArray = Object.entries(tripLogsByVehicle);
-
-      // Sort the trip logs by date for each vehicle
-      for (const [vehicleName, logs] of tripLogsByVehicleArray) {
+  
+      // Convert the tripLogsByVehicle object to an array of objects
+      const tripLogsByVehicleArray = Object.entries(tripLogsByVehicle).map(([vehicleName, logs]) => {
+        // Sort the trip logs by date for each vehicle
         logs.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      }
-
+        return { [vehicleName]: logs };
+      });
+  
+      // Combine the objects into a single object
+      const result = Object.assign({}, ...tripLogsByVehicleArray);
+  
       // Send the result as JSON response
-      res.json(tripLogsByVehicleArray);
+      res.json(result);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Internal server error" });

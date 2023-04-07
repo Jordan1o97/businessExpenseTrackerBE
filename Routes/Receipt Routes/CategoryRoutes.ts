@@ -38,7 +38,7 @@ const categoryService = new CategoryService();
   categoryRoutes.post("/categories", verifyToken, async (req, res) => {
     try {
       const { name, icon } = req.body;
-      const category = new Category(name, icon);
+      const category = new Category(name, icon, getCurrentUserId());
       await categoryService.addCategory(category, getCurrentUserId());
       res.json({ message: "Category added successfully" });
     } catch (error) {
@@ -52,7 +52,7 @@ const categoryService = new CategoryService();
     try {
       const { id } = req.params;
       const { name, icon } = req.body;
-      const category = new Category(name, icon);
+      const category = new Category(name, icon, getCurrentUserId());
       await categoryService.updateCategory(id, category);
       res.json({ message: "Category updated successfully" });
     } catch (error) {

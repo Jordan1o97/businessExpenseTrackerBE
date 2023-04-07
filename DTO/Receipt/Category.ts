@@ -8,10 +8,10 @@ export class Category {
   icon: string;
   userId: string;
 
-  constructor(name: string, icon: string) {
+  constructor(name: string, icon: string, userId: string) {
     this.id = uuidv4();
     this.name = name;
     this.icon = icon;
-    this.userId = getCurrentUserId();
+    this.userId = userId;
   }
 }

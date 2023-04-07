@@ -5,12 +5,12 @@ import { getCurrentUserId } from "../../globals";
 export class CategoryService {
   private categoryCollection = db.collection("categories");
 
-  async addCategory(category: Category, userId: String): Promise<void> {
+  async addCategory(category: Category, userId: string): Promise<void> {
     const docRef = await this.categoryCollection.add({
       ...category,
-      userId: getCurrentUserId(),
+      userId: userId,
     });
-    console.log(`Category with id ${category.id} added successfully.`);
+    console.log(`Category with id ${category.id} for user with id ${userId} added successfully.`);
   }
 
   async getCategoryById(categoryId: string): Promise<Category | undefined> {
