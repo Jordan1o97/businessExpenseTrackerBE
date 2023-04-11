@@ -32,7 +32,11 @@ export class VehicleService {
 
   async updateVehicle(id: string, vehicleData: Vehicle): Promise<void> {
     const vehicleRef = this.vehicleCollection.doc(id);
-    await vehicleRef.set(vehicleData, { merge: true });
+    
+    // Convert the vehicleData object to a plain JavaScript object
+    const plainVehicleData = JSON.parse(JSON.stringify(vehicleData));
+    
+    await vehicleRef.set(plainVehicleData, { merge: true });
     console.log(`Vehicle with id ${id} has been updated.`);
   }
 

@@ -16,9 +16,14 @@ export class ClientService {
   }
 
   async updateClient(client: Client): Promise<void> {
-    await this.clientCollection.doc(client.id).set(client);
+    const clientRef = this.clientCollection.doc(client.id);
+    
+    // Convert the client object to a plain JavaScript object
+    const plainClientData = JSON.parse(JSON.stringify(client));
+    
+    await clientRef.set(plainClientData, { merge: true });
     console.log(`Client with id ${client.id} updated successfully.`);
-  }
+}
 
   async getClientById(clientId: string): Promise<Client | undefined> {
     const querySnapshot = await this.clientCollection.where("id", "==", clientId).get();
@@ -31,6 +36,7 @@ export class ClientService {
       return client;
     }
   }
+
   
   async deleteClient(clientId: string): Promise<void> {
     await this.clientCollection.doc(clientId).delete();

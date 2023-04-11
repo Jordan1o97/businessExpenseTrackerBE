@@ -36,22 +36,10 @@ export class CategoryService {
 
   async updateCategory(categoryId: string, categoryData: Category): Promise<void> {
     const categoryRef = this.categoryCollection.doc(categoryId);
-    const userId = getCurrentUserId();
-  
-    const categoryDoc = await categoryRef.get();
-    if (!categoryDoc.exists) {
-      throw new Error(`Category with id ${categoryId} does not exist.`);
-    }
-  
-    const category = categoryDoc.data() as Category;
-    if (category.userId !== userId) {
-      throw new Error(`Category with id ${categoryId} does not belong to current user.`);
-    }
-  
-    await categoryRef.update({
-      ...categoryData,
-      userId: userId,
-    });
+    // Convert the vehicleData object to a plain JavaScript object
+    const plainCategoryData = JSON.parse(JSON.stringify(categoryData));
+    
+    await categoryRef.set(plainCategoryData, { merge: true });
     console.log(`Category with id ${categoryId} has been updated.`);
   }
 
