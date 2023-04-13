@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { Job } from "../../DTO/TimeTrackor/Job";
 import { JobService } from "../../Services/TimeTracker/JobService";
-import { addJobs } from "../../Populator/TimeTracker/JobPopulator";
+// import { addJobs } from "../../Populator/TimeTracker/JobPopulator";
 import { ClientService } from "../../Services/ClientService";
 import { Client } from "../../DTO/Client";
 import moment from "moment";
@@ -44,10 +44,10 @@ const clientService = new ClientService();
   // Create job
   jobRoutes.post("/jobs", verifyToken, async (req, res) => {
     try {
-      const { start, rate, income, project, clientId, taskId, notes, end } = req.body;
-      const job = new Job(start, rate, income, project, clientId, taskId, notes, end);
+      const { start, end, rate, project, clientId, taskId, notes} = req.body;
+      const job = new Job(new Date(start), new Date(end), rate, project, clientId, taskId, notes);
       await jobService.addJob(job);
-      res.json(job);
+      res.json(job);          
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Internal server error" });
@@ -62,17 +62,13 @@ const clientService = new ClientService();
       if (!existingJob) {
         res.status(404).json({ message: `Job with id ${id} not found` });
       } else {
-        const { start, rate, income, project, clientId, taskId, notes, end } = req.body;
-        existingJob.start = start;
-        existingJob.rate = rate;
-        existingJob.income = income;
-        existingJob.project = project;
-        existingJob.clientId = clientId;
-        existingJob.taskId = taskId;
-        existingJob.notes = notes;
-        existingJob.end = end;
-        await jobService.updateJob(existingJob);
-        res.json(existingJob);
+        const { start, end, rate, project, clientId, taskId, notes } = req.body;
+  
+        const updatedJob = new Job(new Date(start), new Date(end), rate, project, clientId, taskId, notes);
+        updatedJob.id = id; // Set the same ID as the existing job
+        console.log(updatedJob)
+        await jobService.updateJob(updatedJob);
+        res.json(updatedJob);
       }
     } catch (error) {
       console.error(error);
@@ -92,16 +88,16 @@ const clientService = new ClientService();
     }
   });
   
-  // Populate jobs
-  jobRoutes.post("/jobs/populate", verifyToken, async (req, res) => {
-    try {
-      await addJobs();
-      res.json({ message: "Jobs populated successfully" });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
+  // // Populate jobs
+  // jobRoutes.post("/jobs/populate", verifyToken, async (req, res) => {
+  //   try {
+  //     await addJobs();
+  //     res.json({ message: "Jobs populated successfully" });
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ message: "Internal server error" });
+  //   }
+  // });
 
   // Sort Jobs by Day:
 jobRoutes.get("/jobs/user/:userId/daily", verifyToken, async (req, res) => {

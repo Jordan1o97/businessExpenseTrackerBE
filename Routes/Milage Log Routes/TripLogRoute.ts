@@ -54,8 +54,8 @@ tripLogRoutes.post('/triplogs', verifyToken, async (req, res) => {
     const tripLog = new TripLog(
       date,
       expense,
-      start,
-      end,
+      new Date(start),
+      new Date(end),
       totalHours,
       rate,
       vehicle,
@@ -93,19 +93,11 @@ tripLogRoutes.put('/triplogs/:id', verifyToken, async (req, res) => {
         clientId,
         notes,
       } = req.body;
-      existingTripLog.date = date;
-      existingTripLog.expense = expense;
-      existingTripLog.start = start;
-      existingTripLog.end = end;
-      existingTripLog.totalHours;
-      existingTripLog.rate = rate;
-      existingTripLog.vehicle = vehicle;
-      existingTripLog.destination = destination;
-      existingTripLog.origin = origin;
-      existingTripLog.clientId = clientId;
-      existingTripLog.notes = notes;
-      await tripLogService.updateTripLog(existingTripLog);
-      res.json(existingTripLog);
+
+      const updatedTripLog = new TripLog(date, expense, new Date(start), new Date(end), totalHours, rate, vehicle, destination, origin, clientId, notes);
+      updatedTripLog.id = id; // Set the same ID as the existing trip log
+      await tripLogService.updateTripLog(updatedTripLog);
+      res.json(updatedTripLog);
     }
   } catch (error) {
     console.error(error);
