@@ -54,6 +54,7 @@ export class TripLog {
   
     let daysDifference = (endDay.getTime() - startDay.getTime()) / oneDayInMilliseconds;
     daysDifference = Math.ceil(daysDifference); // Round up to the nearest whole day
+    console.log("days: ", daysDifference)
   
     let totalHours = 0;
     for (let day = 0; day <= daysDifference; day++) {
@@ -65,8 +66,10 @@ export class TripLog {
   
       const dailyMillisecondsDifference = dailyEnd.getTime() - dailyStart.getTime();
       const dailyHours = Math.min(8, dailyMillisecondsDifference / (1000 * 60 * 60));
+      const roundedHours = Math.round(dailyHours)
   
-      totalHours += dailyHours;
+      totalHours += roundedHours;
+      console.log("dailey hours: ", roundedHours);
     }
   
     return totalHours;
