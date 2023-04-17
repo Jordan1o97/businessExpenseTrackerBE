@@ -13,6 +13,7 @@ export class Receipt {
     paymentMode?: string;
     description?: string;
     status?: string;
+    pictureId?: string;
     userId: string;
   
     constructor(
@@ -24,6 +25,7 @@ export class Receipt {
       clientId: string,
       paymentMode?: string,
       description?: string,
+      pictureId?: string,
       status: string = "pending",
     ) { 
       this.id = uuidv4();
@@ -37,6 +39,7 @@ export class Receipt {
       this.paymentMode = paymentMode;
       this.description = description;
       this.status = status;
+      this.pictureId = pictureId;
       this.userId = getCurrentUserId();
     }
 }

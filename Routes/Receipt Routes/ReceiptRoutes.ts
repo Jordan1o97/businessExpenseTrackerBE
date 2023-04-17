@@ -53,6 +53,7 @@ receiptRoutes.post('/receipts', verifyToken, async (req, res) => {
       clientId,
       paymentMode,
       description,
+      pictureId,
       status,
     } = req.body;
     const receipt = new Receipt(
@@ -64,6 +65,7 @@ receiptRoutes.post('/receipts', verifyToken, async (req, res) => {
       clientId,
       paymentMode,
       description,
+      pictureId,
       status
     );
     await receiptService.addReceipt(receipt);
@@ -91,6 +93,7 @@ receiptRoutes.put('/receipts/:id', verifyToken, async (req, res) => {
         clientId,
         paymentMode,
         description,
+        pictureId,
         status,
       } = req.body;
       
@@ -102,6 +105,7 @@ receiptRoutes.put('/receipts/:id', verifyToken, async (req, res) => {
       existingReceipt.clientId = clientId;
       existingReceipt.paymentMode = paymentMode;
       existingReceipt.description = description;
+      existingReceipt.pictureId = pictureId;
       existingReceipt.status = status;
 
       await receiptService.updateReceipt(existingReceipt);

@@ -50,6 +50,7 @@ export class ReceiptService {
           receiptData.clientId,
           receiptData.paymentMode,
           receiptData.description,
+          receiptData.pictureId,
           receiptData.status,
       );
         receipt.id = receiptData.id;
