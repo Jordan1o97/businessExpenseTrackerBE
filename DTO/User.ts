@@ -19,6 +19,9 @@ export class User {
     this.username = username;
     this.password = password;
     this.name = name;
-    this.companyName = companyName;
+    if(companyName == 'Company Name (Optional)'){
+      companyName = 'Personal'
+    }
+    this.companyName = companyName ?? "personal";
   }
 }

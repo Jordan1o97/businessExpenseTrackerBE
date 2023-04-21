@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import { verifyToken } from "../verify";
 import { addCategories } from "../Populator/Receipt/CategoryPopulator";
 import { validateReceipt } from "../validateReceipt";
+import { clientAuth } from "../firebaseClient";
 
 const userRoutes = Router();
 const userService = new UserService();
@@ -17,6 +18,18 @@ const userService = new UserService();
 const secret = '5cab09d219339bb519cb4fe771fb65e0a39acd61b59df25ddf767301f17dd104'
 
 //USERS:  
+
+userRoutes.post('/resetPassword', async (req, res) => {
+  const { email } = req.body;
+  console.log('Email:', email);
+  try {
+    await clientAuth.sendPasswordResetEmail(email);
+    res.json({ message: `Password reset email sent to ${email}.` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error sending password reset email' });
+  }
+});
 
 userRoutes.post('/login', async (req, res) => {
   const { username, password } = req.body;

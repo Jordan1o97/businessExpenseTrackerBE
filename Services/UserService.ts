@@ -1,5 +1,6 @@
 import { User } from "../DTO/User";
-import { db } from "../firebase";
+import { db, auth } from "../firebase";
+import { clientAuth } from "../firebaseClient"
 import bcrypt from "bcrypt";
 
 export class UserService {
@@ -29,14 +30,20 @@ export class UserService {
     console.log(`User with id ${userId} updated account type to ${accountType} successfully.`);
   }
 
-
   async addUser(user: User, password: string): Promise<void> {
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    const serializedUser = JSON.parse(JSON.stringify(user));
-    serializedUser.password = hashedPassword;
-    await this.userCollection.add(serializedUser);
-    console.log(`User with id ${user.id} added successfully.`);
+    try {
+      const firebaseUser = await auth.createUser({
+        email: user.username,
+        password: password,
+      });
+
+      user.password = firebaseUser.uid;
+      const serializedUser = JSON.parse(JSON.stringify(user));
+      await this.userCollection.add(serializedUser);
+      console.log(`User with id ${user.id} added successfully.`);
+    } catch (error) {
+      console.error(`Failed to add user: `, error);
+    }
   }
 
   async findUserByEmail(email: string): Promise<User | null> {
@@ -67,32 +74,51 @@ export class UserService {
   }
 
   async getUserByCredentials(username: string, password: string): Promise<User | undefined> {
-    const querySnapshot = await this.userCollection.where("username", "==", username).get();
-    if (querySnapshot.empty) {
-      console.log(`User with username ${username} not found.`);
-      return undefined;
-    } else {
-      const userDoc = querySnapshot.docs[0];
-      const user = userDoc.data() as User;
-      const passwordMatch = await bcrypt.compare(password, user.password);
-      if (!passwordMatch) {
-        console.log(`Incorrect password for user with username ${username}.`);
-        return undefined;
+    try {
+      const signInResult = await clientAuth.signInWithEmailAndPassword(username, password);
+      const firebaseUser = signInResult.user;
+
+      if (firebaseUser) {
+        const querySnapshot = await this.userCollection.where("password", "==", firebaseUser.uid).get();
+        console.log(firebaseUser.uid)
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          const user = userDoc.data() as User;
+          return user;
+        } else {
+          console.log(`User with username ${username} not found in Firestore.`);
+          return undefined;
+        }
       } else {
-        return user;
+        console.log(`User with username ${username} not found in Firebase Auth.`);
+        return undefined;
       }
+    } catch (error) {
+      console.error(`Failed to sign in user with username ${username}: `, error);
+      return undefined;
     }
   }
 
   async deleteUser(userId: string): Promise<void> {
     const querySnapshot = await this.userCollection.where("id", "==", userId).get();
     if (!querySnapshot.empty) {
-      const doc = querySnapshot.docs[0];
-      await doc.ref.delete();
-      console.log(`User with id ${userId} deleted successfully.`);
+      const userDoc = querySnapshot.docs[0];
+      const user = userDoc.data() as User;
+      const password = user.password;
+      await userDoc.ref.delete();
+
+      // Delete the Firebase Auth user
+      try {
+        await auth.deleteUser(password);
+        console.log(`Firebase Auth user with id ${password} deleted successfully.`);
+      } catch (error) {
+        console.error(`Failed to delete Firebase Auth user with id ${userId}: `, error);
+      }
+
+      console.log(`Firestore user with id ${userId} deleted successfully.`);
     } else {
       console.log(`User with id ${userId} not found.`);
     }
-}
+  }
 
 }
