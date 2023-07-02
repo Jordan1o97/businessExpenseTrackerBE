@@ -16,7 +16,7 @@ interface ReceiptValidationResponse {
 async function validateReceipt(receiptData: string): Promise<ReceiptValidationResponse> {
   const requestData: ReceiptData = {
     'receipt-data': receiptData,
-    'password': '9c7f98ac31ed48d0bae214142f94d3bd', // Replace with your app's shared secret
+    'password': 'lol nice try', // Replace with your app's shared secret
   };
 
   let response: AxiosResponse<any> = await axios.post(productionURL, requestData).catch(async (error: AxiosError) => {

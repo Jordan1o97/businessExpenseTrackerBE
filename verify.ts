@@ -14,7 +14,7 @@ export const verifyToken = (
 ) => {
 
   //Initialize Secret:
-  const secret = '5cab09d219339bb519cb4fe771fb65e0a39acd61b59df25ddf767301f17dd104'
+  const secret;
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
